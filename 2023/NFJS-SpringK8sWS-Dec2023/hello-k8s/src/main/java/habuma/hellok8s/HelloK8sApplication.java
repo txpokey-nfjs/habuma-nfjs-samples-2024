@@ -21,7 +21,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
          * ...
          * partOf = "RIOZ" ,
         */
-        configMapVolumes = @ConfigMapVolume(
+        partOf = "habuma"
+        ,       configMapVolumes = @ConfigMapVolume(
                 configMapName = "greeting-config",
                 volumeName = "greeting-config-volume",
                 defaultMode = 0644

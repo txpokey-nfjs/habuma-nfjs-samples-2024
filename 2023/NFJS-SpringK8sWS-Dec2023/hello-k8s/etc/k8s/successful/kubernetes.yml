@@ -1,0 +1,95 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.dekorate.io/vcs-url: <<unknown>>
+    app.dekorate.io/commit-id: 521f395c543ad8341cc1d48b12f530c350948777
+  labels:
+    app.kubernetes.io/version: 0.0.1-SNAPSHOT
+    app.kubernetes.io/name: hello-k8s
+    app.kubernetes.io/part-of: habuma
+  name: hello-k8s
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/version: 0.0.1-SNAPSHOT
+      app.kubernetes.io/name: hello-k8s
+      app.kubernetes.io/part-of: habuma
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/version: 0.0.1-SNAPSHOT
+        app.kubernetes.io/name: hello-k8s
+        app.kubernetes.io/part-of: habuma
+    spec:
+      containers:
+        - env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SPRING_CONFIG_IMPORT
+              value: configtree:/etc/config/
+          image: habuma/hello-k8s:0.0.1-SNAPSHOT
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 10
+          name: hello-k8s
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 10
+          volumeMounts:
+            - mountPath: /etc/config
+              name: greeting-config-volume
+              readOnly: false
+              subPath: ""
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: greeting-config
+            optional: false
+          name: greeting-config-volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    app.dekorate.io/vcs-url: <<unknown>>
+    app.dekorate.io/commit-id: 521f395c543ad8341cc1d48b12f530c350948777
+  labels:
+    app.kubernetes.io/name: hello-k8s
+    app.kubernetes.io/part-of: habuma
+    app.kubernetes.io/version: 0.0.1-SNAPSHOT
+  name: hello-k8s
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/name: hello-k8s
+    app.kubernetes.io/part-of: habuma
+    app.kubernetes.io/version: 0.0.1-SNAPSHOT
+  type: ClusterIP

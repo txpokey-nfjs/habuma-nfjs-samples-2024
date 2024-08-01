@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  greeting.message: Hello_from_k8s
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: greeting-config
